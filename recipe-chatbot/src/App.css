@@ -9,43 +9,6 @@ html, body, #root {
   background-color: green; 
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-/* App.css */
 .chat-container {
   width: 90vw;
   max-width: 1000px;
@@ -53,7 +16,7 @@ html, body, #root {
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  font-family: Arial, sans-serif;
+  font-family: Garamond, serif;
 }
 
 .chat-header {
@@ -80,15 +43,19 @@ html, body, #root {
 }
 
 .chat-input {
-  flex-grow: 1;
+  resize: none;
+  overflow: auto;
+  height: 50px;
+  width: 100%;
   padding: 10px;
-  border-radius: 5px;
   border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
 .chat-button {
   margin-left: 10px;
   padding: 10px 20px;
+  height: 50px;
   border-radius: 5px;
   background-color: #007bff;
   color: white;

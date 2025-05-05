@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const textareaRef = useRef(null);
 
   const sendMessage = async () => {
     if (!input) return;
@@ -11,7 +12,7 @@ function App() {
     setInput('');
 
     try {
-      const response = await fetch('/query', {
+      const response = await fetch('/api/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: input }),
@@ -22,6 +23,20 @@ function App() {
     } catch (err) {
       console.error(err);
       setMessages(prev => [...prev, { sender: 'Bot', text: 'Error reaching server' }]);
+    }
+  };
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
@@ -36,9 +51,11 @@ function App() {
         ))}
       </div>
       <div className="chat-input-area">
-        <input
+        <textarea 
+          ref={textareaRef}
           value={input}
           onChange={e => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder="Ask something..."
           className="chat-input"
         />
