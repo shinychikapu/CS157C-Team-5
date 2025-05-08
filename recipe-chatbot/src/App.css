@@ -6,7 +6,17 @@ html, body, #root {
   width: 100vw;  
   margin: 0;
   padding: 0;
-  background-color: green; 
+  background-color: rgb(40, 43, 40); 
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo {
+  max-height: 300px;
 }
 
 .chat-container {
@@ -17,6 +27,7 @@ html, body, #root {
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   font-family: Garamond, serif;
+  font-size: 16pt;
 }
 
 .chat-header {
@@ -35,6 +46,7 @@ html, body, #root {
 }
 
 .chat-message {
+  white-space: pre-wrap;
   margin: 10px 0;
 }
 
@@ -45,7 +57,8 @@ html, body, #root {
 .chat-input {
   resize: none;
   overflow: auto;
-  height: 50px;
+  max-height: 50px;
+  font-size: 12pt;
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
@@ -65,4 +78,8 @@ html, body, #root {
 
 .chat-button:hover {
   background-color: #0056b3;
+}
+
+textarea::placeholder {
+  font-size: 16px;
 }
