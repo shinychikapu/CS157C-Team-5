@@ -1,5 +1,9 @@
 playground.ipynb
 RAW_recipes.csv
+recipes.csv
+ingredients.csv
+recipe_ingredients.csv
+recipe_tags.csv
 .env
 
 # Byte-compiled / optimized / DLL files

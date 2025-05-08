@@ -3,6 +3,10 @@ import torch
 from neo4j import GraphDatabase
 import json
 import re
+from contextlib import asynccontextmanager
+from neo4j import GraphDatabase
+from dotenv import load_dotenv
+import os
 
 device = 0 if torch.cuda.is_available() else -1
 
@@ -10,6 +14,16 @@ model_name = "google/flan-t5-base"
 tok   = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
+load_dotenv()
+
+NEO4J_URI = os.getenv("NEO4J_URI")
+NEO4J_USER = os.getenv("NEO4J_USER")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
+
+driver = GraphDatabase.driver(
+    NEO4J_URI,
+    auth=(NEO4J_USER, NEO4J_PASSWORD)
+)
 
 if device >= 0:
     model = model.to(f"cuda:{device}")
@@ -18,7 +32,9 @@ if device >= 0:
 tag_model = pipeline(
     "zero-shot-classification",
     model="facebook/bart-large-mnli",
-    device=device,        
+    device=device,
+    # enable multi‐label classification
+    multi_label=True,
 )
 
 # LLM for ingredients extraction
@@ -30,10 +46,9 @@ gen_model = pipeline(
 )
 
 def extract_ingredients(text: str) -> list:
-    # 1) Build a few-shot prompt with clear “Input→Output” examples
     prompt = f"""
-You are a kitchen assistant.  Extract only the ingredient names from the user’s request.
-Respond with a comma-separated list, nothing else.
+Your job is to extract only the ingredient names from the user’s request.
+Respond with a comma-separated list, nothing else. Don't repeat ingredients
 
 Examples:
 
@@ -48,12 +63,23 @@ Ingredients:
 """
     
     result = gen_model(prompt)[0]["generated_text"].strip()
-
+    print(result)
     if result.lower().startswith("ingredients"):
         _, csv = result.split(":", 1)
     else:
         csv = result
-    return [i.strip() for i in csv.split(",") if i.strip()]
+
+
+    items = [i.strip() for i in csv.split(",") if i.strip()]
+
+    seen = set()
+    unique_items = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            unique_items.append(item)
+    return unique_items
+
 
 
 
@@ -67,9 +93,7 @@ POSSIBLE_TAGS = [
  'vegetarian',
  'vegan',
  'gluten-free',
- 'diabetic',
  'dairy-free',
- 'egg-free',
  'nut-free',
  'low-sodium',
  'low-cholesterol',
@@ -83,15 +107,9 @@ POSSIBLE_TAGS = [
  'asian',
  'italian',
  'mexican',
- 'indian',
  'french',
- 'chinese',
- 'european',
  'south-american',
  'middle-eastern',
- 'thai',
- 'japanese',
- 'greek'
 
  'christmas',
  'thanksgiving',
@@ -100,11 +118,11 @@ POSSIBLE_TAGS = [
  'birthday'
 ]
 
-def extract_tags(text, threshold=0.5):
+def extract_tags(text, threshold=0.7):
     out = tag_model(text, POSSIBLE_TAGS)
     return [
-      label for label, score in zip(out["labels"], out["scores"])
-      if score >= threshold
+        label for label, score in zip(out["labels"], out["scores"])
+        if score >= threshold
     ]
 
 def extractor(text):
@@ -114,7 +132,3 @@ def extractor(text):
         "ingredients": ingredients,
         "tags" : tags
     }
-example = "I have rice, beef and egg. What can I make under 30 minutes?"
-
-# Example
-print(extractor(example))

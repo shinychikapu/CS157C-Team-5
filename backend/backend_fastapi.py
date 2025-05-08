@@ -6,7 +6,6 @@ from contextlib import asynccontextmanager
 from neo4j import GraphDatabase
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from extractor import extractor
 
 load_dotenv()
 
@@ -36,49 +35,24 @@ class Query(BaseModel):
 def queryDB(query: Query):
     session = driver.session()
     try:
-        
-        extraction = extractor(query.question)
-        ingredients = extraction["ingredients"]
-        tags = extraction["tags"]
+        q = query.question.lower()
 
-        cypher = """
-        MATCH (r:Recipe)-[:HAS_INGREDIENT]->(i:Ingredient)
-        WHERE toLower(i.name) IN $ingredients
-        WITH r, collect(DISTINCT toLower(i.name)) AS matchedIngredients
-        WHERE size(matchedIngredients) = size($ingredients)
-        RETURN r
-        LIMIT 25
-        """
-        params = {
-            "ingredients": [i.lower() for i in ingredients],
-            "tags": [t.lower() for t in tags]
-        }
-
-        result = session.run(cypher, params)
-        recipes = [record["r"]._properties for record in result]
-
-        return {
-            "answer": f"Found {len(recipes)} recipes.",
-            "recipes": recipes,
-            "ingredients": ingredients,
-            "tags": tags,
-        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         session.close()
 
-@app.get("/api/nodes")
-def get_nodes():
-    session = driver.session()
-    try:
-        result = session.run("MATCH (n) RETURN n LIMIT 30")
-        nodes = [record["n"]._properties for record in result]
-        return nodes
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Error querying Neo4j") from e
-    finally:
-        session.close()
+# @app.get("/api/nodes")
+# def get_nodes():
+#     session = driver.session()
+#     try:
+#         result = session.run("MATCH (n) RETURN n LIMIT 30")
+#         nodes = [record["n"]._properties for record in result]
+#         return nodes
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail="Error querying Neo4j") from e
+#     finally:
+#         session.close()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

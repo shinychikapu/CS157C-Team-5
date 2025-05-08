@@ -1,7 +1,7 @@
 import pandas as pd
 import ast
 
-df = pd.read_csv("downloads/RAW_recipes.csv")
+df = pd.read_csv("RAW_recipes.csv")
 
 df = df.apply(lambda col: col.str.replace(r'\s+', ' ', regex=True).str.strip() if col.dtype == "object" else col)
 
