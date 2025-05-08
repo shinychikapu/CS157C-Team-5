@@ -55,7 +55,7 @@ function App() {
         <div className="chat-box">
           {messages.map((msg, i) => (
             <div className={`chat-message ${msg.sender === 'You' ? 'user-message' : 'bot-message'}`} key={i}>
-              <div className="message-bubble">
+              <div className={msg.sender === 'You' ? 'message-bubble' : ''}>
                 <strong>{msg.sender}:</strong> <br />{msg.text}
               </div>
             </div>
