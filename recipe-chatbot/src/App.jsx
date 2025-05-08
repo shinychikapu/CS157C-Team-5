@@ -23,7 +23,6 @@ function App() {
         return `• ${recipe.name}\n  - Description: ${recipe.description || 'N/A'}\n  - Instructions: ${recipe.steps || 'N/A'}\n`;
       }).join('\n') || 'No recipes found.';
       const tags = data.tags?.join(', ') || 'None';
-      const ingredients = data.ingredients?.join(', ') || 'None';
       setMessages(prev => [...prev, 
         { sender: 'Bot', text: `${data.answer || 'No answer'}\n` +
           `Recipes:\n${recipeList}\n`}
@@ -55,8 +54,10 @@ function App() {
         <h2 className="chat-header">Recipe Chatbot</h2>
         <div className="chat-box">
           {messages.map((msg, i) => (
-            <div className="chat-message" key={i}>
-              <strong>{msg.sender}:</strong> {msg.text}
+            <div className={`chat-message ${msg.sender === 'You' ? 'user-message' : 'bot-message'}`} key={i}>
+              <div className="message-bubble">
+                <strong>{msg.sender}:</strong> <br />{msg.text}
+              </div>
             </div>
           ))}
         </div>

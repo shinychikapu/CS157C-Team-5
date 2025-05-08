@@ -1,7 +1,7 @@
 html, body, #root {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   height: 100vh; 
   width: 100vw;  
   margin: 0;
@@ -20,8 +20,8 @@ html, body, #root {
 }
 
 .chat-container {
-  width: 90vw;
-  max-width: 1000px;
+  width: 100vw;
+  max-width: 1250px;
   background-color: #f4f4f4;
   border-radius: 10px;
   padding: 20px;
@@ -38,7 +38,7 @@ html, body, #root {
 .chat-box {
   border: 1px solid #ccc;
   padding: 10px;
-  height: 400px; 
+  height: 500px; 
   overflow-y: auto;
   background-color: #fff;
   margin-bottom: 10px;
@@ -46,6 +46,7 @@ html, body, #root {
 }
 
 .chat-message {
+  display: flex;
   white-space: pre-wrap;
   margin: 10px 0;
 }
@@ -82,4 +83,29 @@ html, body, #root {
 
 textarea::placeholder {
   font-size: 16px;
+}
+
+.user-message {
+  justify-content: flex-end;
+}
+
+.bot-message {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 15px;
+  white-space: pre-wrap;
+}
+
+.user-message .message-bubble {
+  background-color: #6ace1d;
+  color: #000;
+}
+
+.bot-message .message-bubble {
+  background-color: #f1f0f0;
+  color: #000;
 }
