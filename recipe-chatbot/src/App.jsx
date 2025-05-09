@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { AiOutlineBars } from "react-icons/ai";
 import './App.css';
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [recipes, setRecipes] = useState([]);
   const textareaRef = useRef(null);
 
   const sendMessage = async () => {
@@ -27,6 +30,7 @@ function App() {
         { sender: 'Bot', text: `${data.answer || 'No answer'}\n` +
           `Recipes:\n${recipeList}\n`}
       ]);
+      setRecipes(data.recipes || []);
     } catch (err) {
       console.error(err);
       setMessages(prev => [...prev, { sender: 'Bot', text: 'Error reaching server' }]);
@@ -49,6 +53,19 @@ function App() {
 
   return (
     <div className="wrapper">
+      <div className="tools">
+        <button className="toggle-button" onClick={() => setIsOpen(!isOpen)}>
+          <AiOutlineBars />
+        </button>
+        <span className="tools-text">{isOpen ? "Close sidebar" : "Open sidebar"}</span>
+      </div>
+      <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+        Recipe  <br />
+        REcipe 2
+        {recipes.map((recipe, index) => (
+        <li key={index}>{recipe.name}</li>
+      ))}
+      </div>
       <img src="/recipe logo transparent.png" alt="Logo" className="logo" />
       <div className="chat-container">
         <h2 className="chat-header">Recipe Chatbot</h2>

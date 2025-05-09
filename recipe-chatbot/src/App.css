@@ -2,11 +2,12 @@ html, body, #root {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  height: 100vh; 
+  height: 100%; 
   width: 100vw;  
   margin: 0;
   padding: 0;
   background-color: rgb(40, 43, 40); 
+  overflow-x: hidden;
 }
 
 .wrapper {
@@ -108,4 +109,72 @@ textarea::placeholder {
 .bot-message .message-bubble {
   background-color: #f1f0f0;
   color: #000;
+}
+
+.sidebar {
+  position: fixed;
+  left: -300px;
+  width: 250px;
+  height: 100%;
+  background-color: #1e1e1e;
+  color: white;
+  padding: 20px;
+  transition: left 0.3s ease;
+  z-index: 1000;
+  padding-top: 80px;
+  font-size: 18px;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.toggle-button {
+  position: fixed;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 900;
+}
+
+.tools {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1100;
+  display: inline-block;
+}
+
+.tools-text {
+  position: absolute;
+  transform: translateX(50%);
+  visibility: hidden;
+  background-color: black;
+  color: white;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  position: absolute;
+  margin-top: 6px;
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 1;
+}
+
+.tools:hover .tools-text {
+  visibility: visible;
+  opacity: 1;
 }
