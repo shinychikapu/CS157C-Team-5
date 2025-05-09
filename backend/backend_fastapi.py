@@ -1,22 +1,25 @@
-import os
-import uvicorn
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from backend.response import queryDB, format_recipe, polish_markdown
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import uvicorn
+import os
 from neo4j import GraphDatabase
 from dotenv import load_dotenv
-from pydantic import BaseModel
-
-load_dotenv()
-
-NEO4J_URI = os.getenv("NEO4J_URI")
-NEO4J_USER = os.getenv("NEO4J_USER")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
 
 driver = GraphDatabase.driver(
-    NEO4J_URI,
-    auth=(NEO4J_USER, NEO4J_PASSWORD)
+    "bolt://localhost:7687",
+    auth=("neo4j", "123456789")
 )
+
+app = FastAPI()
+
+class QueryIn(BaseModel):
+    question: str
+
+class RecipeOut(BaseModel):
+    markdown: str
 
 app = FastAPI()
 
@@ -28,31 +31,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Query(BaseModel):
-    question: str
-
-@app.post("/api/query")
-def queryDB(query: Query):
-    session = driver.session()
-    try:
-        q = query.question.lower()
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        session.close()
-
-# @app.get("/api/nodes")
-# def get_nodes():
-#     session = driver.session()
-#     try:
-#         result = session.run("MATCH (n) RETURN n LIMIT 30")
-#         nodes = [record["n"]._properties for record in result]
-#         return nodes
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail="Error querying Neo4j") from e
-#     finally:
-#         session.close()
+@app.post("/api/recipe", response_model=RecipeOut)
+def get_recipe(q: QueryIn):
+    recipes = queryDB(q.question, driver)      
+    if not recipes:
+        raise HTTPException(status_code=404, detail="No recipes found")
+    raw = recipes[0]
+    plain_md = format_recipe(raw)
+    final_md = polish_markdown(plain_md)
+    print(final_md)
+    return RecipeOut(markdown=final_md)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

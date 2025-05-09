@@ -4,8 +4,6 @@ from neo4j import GraphDatabase
 import json
 import re
 from contextlib import asynccontextmanager
-from neo4j import GraphDatabase
-from dotenv import load_dotenv
 import os
 
 device = 0 if torch.cuda.is_available() else -1
@@ -14,17 +12,6 @@ flan_large = "google/flan-t5-large"
 tok_fl   = AutoTokenizer.from_pretrained(flan_large)
 model_fl = AutoModelForSeq2SeqLM.from_pretrained(flan_large).to(
     f"cuda:{device}" if device>=0 else "cpu"
-)
-
-load_dotenv()
-
-NEO4J_URI = os.getenv("NEO4J_URI")
-NEO4J_USER = os.getenv("NEO4J_USER")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
-
-driver = GraphDatabase.driver(
-    NEO4J_URI,
-    auth=(NEO4J_USER, NEO4J_PASSWORD)
 )
 
 # Tag Classification model
@@ -131,7 +118,7 @@ def extractor(text):
         "tags" : tags
     }
 
-def queryDB(text):
+def queryDB(text,driver):
     session = driver.session()
     try:
         # 1) Extract ingredients & tags
@@ -215,6 +202,7 @@ LIMIT 10;
         params = {"ingredients": ingredients, "tags": tags}
         result  = session.run(cypher, params)
         recipes = [record["recipe"] for record in result]
+        print("returning queries")
         return recipes
 
     except Exception as e:
@@ -235,46 +223,6 @@ def parse_steps(s: str) -> list[str]:
         if p:
             cleaned.append(p)
     return cleaned
-
-def format_recipe_plain(recipe: dict) -> str:
-    """
-    Safely formats a recipe dict to Markdown, splitting steps properly.
-    """
-    name        = recipe.get("name", "")
-    description = recipe.get("description", "")
-    ingredients = recipe.get("ingredients") or []
-    # if ingredients came in as a stringified list, parse similarly:
-    if isinstance(ingredients, str):
-        ingredients = [i.strip().strip("[]'\" ") for i in ingredients.split(",") if i.strip()]
-
-    # parse steps string into a Python list
-    steps = recipe.get("steps") or []
-    if isinstance(steps, str):
-        steps = parse_steps(steps)
-
-    tags = recipe.get("tags") or []
-    if isinstance(tags, str):
-        tags = [t.strip().strip("[]'\" ") for t in tags.split(",") if t.strip()]
-
-    lines = [f"# {name}\n"]
-
-    if description:
-        lines.append(f"**Description:** {description}\n")
-
-    lines.append("**Ingredients:**")
-    for ing in ingredients:
-        lines.append(f"- {ing}")
-    lines.append("")
-
-    lines.append("**Steps:**")
-    for idx, step in enumerate(steps, 1):
-        lines.append(f"{idx}. {step}")
-    lines.append("")
-
-    if tags:
-        lines.append(f"**Tags:** {', '.join(tags)}")
-
-    return "\n".join(lines)
 
 
 def format_recipe(recipe: dict) -> str:
@@ -342,7 +290,7 @@ def polish_markdown(md: str) -> str:
 
         # Fallback: capitalize first letter only
         out.append(line.capitalize())
-
+    print("polished")
     return "\n".join(out)
 
 def add_flair(md: str) -> str:
@@ -362,6 +310,6 @@ You’re a playful cooking assistant.  Take the following Markdown recipe and:
     out = gen_model(prompt, truncation=True)[0]["generated_text"]
     return out.strip()
 
-example = "I have egg, rice and pork. What can I make under 60 minutes preferably Asian?"
+# example = "I have egg, rice and pork. What can I make under 60 minutes preferably Asian?"
 
-print(polish_markdown(format_recipe(queryDB(example)[0])))
+# print(polish_markdown(format_recipe(queryDB(example)[0])))
