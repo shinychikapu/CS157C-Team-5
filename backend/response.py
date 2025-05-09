@@ -103,12 +103,25 @@ POSSIBLE_TAGS = [
  'birthday'
 ]
 
-def extract_tags(text, threshold=0.7):
+def extract_tags(text, threshold=0.8):
     out = tag_model(text, POSSIBLE_TAGS)
-    return [
+    tags = [
         label for label, score in zip(out["labels"], out["scores"])
         if score >= threshold
     ]
+
+    time_tags = []
+    for t in tags:
+        m = re.match(r"(\d+)-minutes-or-less", t)
+        if m:
+            time_tags.append((int(m.group(1)), t))
+    
+    if time_tags:
+        biggesst, best_tag = max(time_tags, key=lambda x: x[0])
+        tags = [t for t in tags if not re.match(r"\d+-minutes-or-less", t)]
+        tags.append(best_tag)
+
+    return tags
 
 def extractor(text):
     ingredients = extract_ingredients(text)
@@ -145,9 +158,7 @@ RETURN r {
   .name,
   .description,
   ingredients:    allIng,
-  tags:           r.tags,
-  steps:          r.steps,
-  ingredientExtras: ingredientExtras
+  steps:          r.steps
 } AS recipe
 ORDER BY ingredientExtras ASC
 LIMIT 10;
@@ -192,9 +203,7 @@ WITH
 RETURN r {
   .name,
   .description,
-  ingredients:    allIng,
-  tags:           allTags,
-  steps:          r.steps
+  ingredients:    allIng,steps:          r.steps
 } AS recipe
 ORDER BY ingredientExtras ASC
 LIMIT 10;
