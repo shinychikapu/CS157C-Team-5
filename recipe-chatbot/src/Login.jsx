@@ -35,6 +35,7 @@ export default function Login() {
         return
       }
       localStorage.setItem('access_token', data.access_token)
+      console.log('Login success, navigating to home...')
       navigate('/', { replace: true })
     } catch (err) {
       console.error(err)

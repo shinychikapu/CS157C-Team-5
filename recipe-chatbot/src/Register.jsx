@@ -33,7 +33,7 @@ export default function Register() {
       const data = await res.json()
       if (res.status === 201) {
         setMsg('Registration successful! Redirecting…')
-        setTimeout(() => navigate('/login', { replace: true }), 1500)
+        setTimeout(() => navigate('/', { replace: true }), 1500)
       } else {
         setError(data.detail || 'Registration failed')
       }

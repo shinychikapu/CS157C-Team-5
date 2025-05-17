@@ -6,6 +6,7 @@ import os, jwt
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
+from dotenv import load_dotenv
 
 driver = GraphDatabase.driver(
     "bolt://localhost:7687",
@@ -14,7 +15,8 @@ driver = GraphDatabase.driver(
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-SECRET_KEY = os.getenv("JWT_SECRET")
+load_dotenv()
+SECRET_KEY = os.getenv("JWT_SECRET", "secret_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
