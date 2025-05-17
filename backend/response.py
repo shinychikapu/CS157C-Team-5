@@ -103,12 +103,25 @@ POSSIBLE_TAGS = [
  'birthday'
 ]
 
-def extract_tags(text, threshold=0.7):
+def extract_tags(text, threshold=0.8):
     out = tag_model(text, POSSIBLE_TAGS)
-    return [
+    tags = [
         label for label, score in zip(out["labels"], out["scores"])
         if score >= threshold
     ]
+
+    time_tags = []
+    for t in tags:
+        m = re.match(r"(\d+)-minutes-or-less", t)
+        if m:
+            time_tags.append((int(m.group(1)), t))
+    
+    if time_tags:
+        biggesst, best_tag = max(time_tags, key=lambda x: x[0])
+        tags = [t for t in tags if not re.match(r"\d+-minutes-or-less", t)]
+        tags.append(best_tag)
+
+    return tags
 
 def extractor(text):
     ingredients = extract_ingredients(text)
@@ -145,9 +158,7 @@ RETURN r {
   .name,
   .description,
   ingredients:    allIng,
-  tags:           r.tags,
-  steps:          r.steps,
-  ingredientExtras: ingredientExtras
+  steps:          r.steps
 } AS recipe
 ORDER BY ingredientExtras ASC
 LIMIT 10;
@@ -157,49 +168,42 @@ LIMIT 10;
             cypher = """
 WITH $ingredients AS wantIng, $tags AS wantTags
 
-//Find recipe with required Ingredients
+// Find Recipe with required ingredients
 MATCH (r:Recipe)-[:HAS_INGREDIENT]->(ing:Ingredient)
-WITH 
-  r,
-  collect(DISTINCT toLower(ing.name)) AS allIng,
-  wantIng,
-  wantTags
+WITH r, collect(DISTINCT toLower(ing.name)) AS allIng, wantIng, wantTags
 WHERE all(req IN wantIng 
           WHERE any(act IN allIng WHERE act STARTS WITH req))
 
-// Filter by tags
-  AND all(tagReq IN wantTags 
-          WHERE exists {
-            MATCH (r)-[:HAS_TAG]->(t:Tag)
-            WHERE toLower(t.tags) = tagReq
-          })
-
-//Compute extra ingredients
+// Get all tags for the recipe
+OPTIONAL MATCH (r)-[:HAS_TAG]->(t:Tag)
 WITH 
   r, 
   allIng, 
+  collect(DISTINCT toLower(t.tag)) AS recipeTags,
+  wantTags,
   size(allIng) - size(wantIng) AS ingredientExtras
 
-//get all tags of recipe
-OPTIONAL MATCH (r)-[:HAS_TAG]->(tAll:Tag)
+// Compute how many tags match
 WITH 
   r, 
   allIng, 
-  ingredientExtras, 
-  collect(DISTINCT tAll.tags) AS allTags
+  recipeTags,
+  ingredientExtras,
+  [tag IN wantTags WHERE tag IN recipeTags] AS matchedTags
 
-//sort by fewest extra ingredients
+// Return recipe info + match score
 RETURN r {
   .name,
   .description,
-  ingredients:    allIng,
-  tags:           allTags,
-  steps:          r.steps
+  ingredients: allIng,
+  steps: r.steps,
+  matchedTagCount: size(matchedTags)
 } AS recipe
-ORDER BY ingredientExtras ASC
-LIMIT 10;
+ORDER BY size(matchedTags) DESC, ingredientExtras ASC
+LIMIT 10
 """
         params = {"ingredients": ingredients, "tags": tags}
+        print(tags, "\n", cypher, "\n", params)
         result  = session.run(cypher, params)
         recipes = [record["recipe"] for record in result]
         print("returning queries")
