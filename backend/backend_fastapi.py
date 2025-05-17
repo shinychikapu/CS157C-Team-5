@@ -65,7 +65,8 @@ def login(user: UserIn):
 
 @app.post("/api/recipe", response_model=RecipeOut)
 def get_recipe(q: QueryIn):
-    recipes = queryDB(q.question, driver)      
+    recipes = queryDB(q.question, driver)
+    print(recipes)     
     if not recipes:
         raise HTTPException(status_code=404, detail="No recipes found")
     raw = recipes[0]
