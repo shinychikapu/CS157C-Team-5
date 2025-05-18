@@ -129,6 +129,7 @@ WHERE all(req IN wantIng
 WITH r, allIng, size(allIng) - size(wantIng) AS ingredientExtras
 
 RETURN r {
+  .id,
   .name,
   .description,
   ingredients:    allIng,
@@ -167,6 +168,7 @@ WITH
 
 // Return recipe info + match score
 RETURN r {
+  .id,
   .name,
   .description,
   ingredients: allIng,
