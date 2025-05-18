@@ -1,0 +1,244 @@
+html, body, #root {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-color: rgb(40, 43, 40); 
+  overflow-x: hidden;
+  font-family: Garamond, serif;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo {
+  max-height: 200px;
+}
+
+.chat-container {
+  width: 100vw;
+  max-width: 1000px;
+  max-height: 1000px;
+  background-color: #f4f4f4;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: Garamond, serif;
+  font-size: 16pt;
+}
+
+.chat-header {
+  text-align: center;
+  color: #333;
+}
+
+.chat-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  height: 450px; 
+  overflow-y: auto;
+  background-color: #fff;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.chat-message {
+  display: flex;
+  white-space: pre-wrap;
+  margin: 10px 0;
+}
+
+.chat-input-area {
+  display: flex;
+}
+
+.chat-input {
+  resize: none;
+  overflow: auto;
+  max-height: 50px;
+  font-size: 12pt;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.chat-button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  height: 50px;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.chat-button:hover {
+  background-color: #0056b3;
+}
+
+textarea::placeholder {
+  font-size: 16px;
+}
+
+.user-message {
+  justify-content: flex-end;
+}
+
+.bot-message {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 15px;
+  white-space: pre-wrap;
+}
+
+.user-message .message-bubble {
+  background-color: #6ace1d;
+  color: #000;
+}
+
+.bot-message .message-bubble {
+  background-color: #f1f0f0;
+  color: #000;
+}
+
+.sidebar {
+  position: fixed;
+  left: -300px;
+  width: 250px;
+  height: 100%;
+  background-color: #1e1e1e;
+  color: white;
+  padding: 20px;
+  transition: left 0.3s ease;
+  z-index: 1000;
+  padding-top: 80px;
+  font-size: 18px;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.toggle-button {
+  position: fixed;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.toggle-button:hover {
+  background-color: #0056b3
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 900;
+}
+
+.tools {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1100;
+  display: inline-block;
+}
+
+.tools-text {
+  position: absolute;
+  transform: translateX(50%);
+  visibility: hidden;
+  background-color: black;
+  color: white;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  position: absolute;
+  margin-top: 6px;
+  opacity: 0;
+  white-space: nowrap;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 1;
+}
+
+.tools:hover .tools-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.logout-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.logout-button:hover {
+  background-color: #0056b3
+}
+
+.markdown-body {
+  /* optional: constrain width so lines don’t stretch too far */
+  max-width: 600px;
+}
+
+/* Paragraphs */
+.markdown-body p {
+  margin: 0.25em 0;        /* smaller top/bottom */
+  line-height: 1.4;
+}
+
+/* Headings */
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  line-height: 0.25em;
+  margin: 0.5em 0 0.25em;
+}
+
+/* Lists */
+.markdown-body ul,
+.markdown-body ol {
+  line-height: 1em;
+  margin: 0.25em 0 0.5em 1.25em;  /* tighten top & left */
+  padding: 0;                     /* remove extra padding */
+}
+
+/* List items */
+.markdown-body li {
+  margin: 0.15em 0;      /* small gap between items */
+  padding: 0;
+}
+
+/* Optional: make nested lists even tighter */
+.markdown-body ul ul,
+.markdown-body ol ol {
+  line-height: 1em;
+  margin-top: 0.25em;
+  margin-left: 1em;
+}
+

@@ -1,0 +1,55 @@
+ /* template from mdbootstrap */
+@import 'mdb-react-ui-kit/dist/css/mdb.min.css';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+
+body {
+  /* fallback for old browsers */
+  background: #6a11cb;
+
+  /* Chrome 10-25, Safari 5.1-6 */
+  background: -webkit-linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+
+  /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1))
+}
+
+.login-wrapper {
+  min-height: 100vh;
+  width: 100vw;
+  height: 100vh; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: radial-gradient(
+      hsl(218, 41%, 35%) 15%,
+      hsl(218, 41%, 30%) 35%,
+      hsl(218, 41%, 20%) 75%,
+      hsl(218, 41%, 19%) 80%,
+      transparent 100%),
+    radial-gradient(
+      hsl(218, 41%, 45%) 15%,
+      hsl(218, 41%, 30%) 35%,
+      hsl(218, 41%, 20%) 75%,
+      hsl(218, 41%, 19%) 80%,
+      transparent 100%);
+}
+
+.login-card {
+  background: rgba(0, 0, 0, 0.75) !important;
+  border-radius: 1rem;
+  max-width: 1000px;
+  width: 100%;
+}
+
+.login-wrapper .form-control {
+  color: #ffffff !important;
+}
+
+.login-btn {
+  background-color: #007bff !important;
+}
+
+.login-btn:hover {
+  background-color: #0a2a49 !important;
+}
