@@ -1,0 +1,55 @@
+{
+  "hash": "3e0df93b",
+  "configHash": "6f85400a",
+  "lockfileHash": "9ca0b1dc",
+  "browserHash": "cc94e3aa",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "aeaf1abd",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "89851d1f",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "3e63d003",
+      "needsInterop": false
+    },
+    "mdb-react-ui-kit": {
+      "src": "../../node_modules/mdb-react-ui-kit/dist/mdb-react-ui-kit.esm.js",
+      "file": "mdb-react-ui-kit.js",
+      "fileHash": "f409f898",
+      "needsInterop": false
+    },
+    "react-markdown": {
+      "src": "../../node_modules/react-markdown/index.js",
+      "file": "react-markdown.js",
+      "fileHash": "2a211c63",
+      "needsInterop": false
+    },
+    "react-icons/ai": {
+      "src": "../../node_modules/react-icons/ai/index.mjs",
+      "file": "react-icons_ai.js",
+      "fileHash": "963f7411",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-VMOYVQZT": {
+      "file": "chunk-VMOYVQZT.js"
+    },
+    "chunk-6JPDVVWJ": {
+      "file": "chunk-6JPDVVWJ.js"
+    },
+    "chunk-KQ7WO6A7": {
+      "file": "chunk-KQ7WO6A7.js"
+    }
+  }
+}

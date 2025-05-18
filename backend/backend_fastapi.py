@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
-from backend.response import queryDB, format_recipe, polish_markdown
+from response import queryDB, format_recipe, polish_markdown
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -12,7 +12,7 @@ import torch
 import uuid
 from dotenv import load_dotenv
 
-from backend.auth import (
+from auth import (
     get_user_record,
     create_user_record,
     hash_password,
@@ -70,6 +70,10 @@ class RecipeSessionOut(BaseModel):
     markdown:   str
     total:      int
     index:      int
+    recipes:    List[dict]
+
+class SaveRecipeIn(BaseModel):
+    recipe_id: int
 
 app = FastAPI()
 
@@ -121,7 +125,8 @@ def start_recipe(q: QueryIn):
         session_id=session_id,
         markdown=md,
         total=len(all_recipes),
-        index=0
+        index=0,
+        recipes = all_recipes
     )
 
 @app.post("/api/recipe/next", response_model=RecipeSessionOut)
@@ -143,8 +148,43 @@ def next_recipe(s: SessionIn):
         session_id=s.session_id,
         markdown=md,
         total=len(recipes),
-        index=idx
+        index=idx,
+        recipes=recipes
     )
+
+@app.post("/api/user/save-recipe")
+def save_recipe(
+    payload: SaveRecipeIn,
+    current_user_email: str = Depends(get_current_user),
+):
+    """
+    current_user_email will be the `sub` field from the JWT if
+    the token was valid.  Otherwise FastAPI will immediately return 401.
+    """
+    recipe_id = payload.recipe_id
+    print(recipe_id)
+    # now persist the SAVED relationship in Neo4j
+    with driver.session() as session:
+        session.run(
+            """
+            MATCH (u:User {email:$email})
+            MATCH (r:Recipe {id:$recipe_id})
+            MERGE (u)-[:SAVED]->(r)
+            """,
+            {"email": current_user_email, "recipe_id": recipe_id}
+        )
+
+    return {"status": "ok", "recipe_saved": recipe_id}
+
+@app.get("/api/user/saved-recipes", dependencies=[Depends(get_current_user)])
+def get_saved_recipes(current_user: str = Depends(get_current_user)):
+    with driver.session() as session:
+        result = session.run("""
+            MATCH (u:User {email: $email})-[:SAVED]->(r:Recipe)
+            RETURN r { .id, .name, .description, steps: r.steps } AS recipe
+        """, {"email": current_user})
+        recipes = [rec["recipe"] for rec in result]
+    return {"recipes": recipes}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

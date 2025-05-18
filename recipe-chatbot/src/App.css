@@ -204,6 +204,7 @@ textarea::placeholder {
 .markdown-body {
   /* optional: constrain width so lines don’t stretch too far */
   max-width: 600px;
+  font-size: medium;
 }
 
 /* Paragraphs */
