@@ -12,6 +12,10 @@ function App() {
   const [recipes, setRecipes] = useState([]);
   const textareaRef = useRef(null);
   const navigate = useNavigate();
+  const [sessionId, setSessionId] = useState(null);
+  const [total, setTotal]       = useState(0);
+  const [index, setIndex]       = useState(0);
+  const [markdown, setMarkdown] = useState("");
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -28,7 +32,7 @@ function App() {
     setInput('');
 
     try {
-      const res = await fetch('/api/recipe', {    // <-- use proxy
+      const res = await fetch('/api/recipe', {   
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: input }),
@@ -41,6 +45,10 @@ function App() {
       const data = await res.json();
       const md   = data.markdown ?? "Sorry, no recipe.";
       console.log(data)
+      setSessionId(data.session_id);
+      setTotal(data.total);
+      setIndex(data.index);      // will be 0
+      setMarkdown(data.markdown);
       // Add bot bubble with markdown
       setMessages(prev => [...prev, { sender: 'Bot', markdown: md }]);
       setRecipes(data.recipes || []);
@@ -52,6 +60,41 @@ function App() {
       ]);
     }
   };
+  
+  const nextRecipe = async () => {
+  if (!sessionId) {
+    console.warn("➤ no sessionId yet, cannot fetch next");
+    return;
+  }
+  setMessages(prev => [...prev, { sender: 'You', text: 'Next recipe' }]);
+  console.log("➤ fetching next with sessionId:", sessionId);
+  try {
+    const res = await fetch("/api/recipe/next", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId }),  // snake_case
+    });
+    console.log("➤ response status:", res.status);
+    const data = await res.json();
+    console.log("➤ response body:", data);
+    const md   = data.markdown ?? "Sorry, no recipe.";
+    if (!res.ok) {
+      // show the backend’s error
+      throw new Error(data.detail || "Unknown error");
+    }
+
+    setIndex(data.index);
+    setMarkdown(data.markdown);
+    setMessages(prev => [...prev, { sender: 'Bot', markdown: md }]);
+    setRecipes(data.recipes || []);
+  } catch (err) {
+    console.error("nextRecipe error:", err);
+    setMessages(prev => [
+      ...prev,
+      { sender: "Bot", text: `❌ ${err.message}` }
+    ]);
+  }
+};
 
   const handleKeyDown = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -102,7 +145,12 @@ function App() {
               <div className={msg.sender === 'You' ? 'message-bubble' : ''}>
                 <strong>{msg.sender}:</strong><br/>
                 {msg.sender === 'Bot' && msg.markdown ? (
-                  <ReactMarkdown>{msg.markdown}</ReactMarkdown>
+                  <div className="markdown-body">
+                    <ReactMarkdown>
+                      {String(msg.markdown)}
+                    </ReactMarkdown>
+                    <button>Save</button>
+                  </div>
                 ) : (
                   <p>{msg.text}</p>
                 )}
@@ -112,6 +160,7 @@ function App() {
         </div>
 
         <div className="chat-input-area">
+          <button onClick={nextRecipe} className="chat-button">Next</button>
           <textarea
             ref={textareaRef}
             value={input}

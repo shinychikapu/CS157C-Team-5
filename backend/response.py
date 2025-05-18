@@ -1,36 +1,10 @@
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer,pipeline
-import torch
 from neo4j import GraphDatabase
 import json
 import re
 from contextlib import asynccontextmanager
 import os
 
-device = 0 if torch.cuda.is_available() else -1
-
-flan_large = "google/flan-t5-large"
-tok_fl   = AutoTokenizer.from_pretrained(flan_large)
-model_fl = AutoModelForSeq2SeqLM.from_pretrained(flan_large).to(
-    f"cuda:{device}" if device>=0 else "cpu"
-)
-
-# Tag Classification model
-tag_model = pipeline(
-    "zero-shot-classification",
-    model="facebook/bart-large-mnli",
-    device=device,
-    multi_label=True,
-)
-
-# LLM for ingredients extraction
-gen_model = pipeline(
-    "text2text-generation",
-    model=model_fl,
-    tokenizer=tok_fl,
-    device=device,
-)
-
-def extract_ingredients(text: str) -> list:
+def extract_ingredients(text, gen_model) -> list:
     prompt = f"""
 Your job is to extract only the ingredient names from the user’s request.
 Respond with a comma-separated list, nothing else. Don't repeat ingredients
@@ -103,7 +77,7 @@ POSSIBLE_TAGS = [
  'birthday'
 ]
 
-def extract_tags(text, threshold=0.8):
+def extract_tags(text, tag_model, threshold=0.8):
     out = tag_model(text, POSSIBLE_TAGS)
     tags = [
         label for label, score in zip(out["labels"], out["scores"])
@@ -123,19 +97,19 @@ def extract_tags(text, threshold=0.8):
 
     return tags
 
-def extractor(text):
-    ingredients = extract_ingredients(text)
-    tags = extract_tags(text)
+def extractor(text,gen_model, tag_model):
+    ingredients = extract_ingredients(text, gen_model)
+    tags = extract_tags(text, tag_model)
     return{
         "ingredients": ingredients,
         "tags" : tags
     }
 
-def queryDB(text,driver):
+def queryDB(text, driver, gen_model, tag_model):
     session = driver.session()
     try:
         # 1) Extract ingredients & tags
-        extraction  = extractor(text)
+        extraction  = extractor(text, gen_model, tag_model)
         ingredients = [i.lower() for i in extraction.get("ingredients", [])]
         tags        = [t.lower() for t in extraction.get("tags", [])]
         print(ingredients)
@@ -214,6 +188,7 @@ LIMIT 10
 
     finally:
         session.close()
+
 def parse_steps(s: str) -> list[str]:
     """
     Given a string like "['step1', 'step2', ...]", split on commas
@@ -237,20 +212,20 @@ def format_recipe(recipe: dict) -> str:
     
     lines = []
     # Title
-    lines.append(f"# {name}\n")
+    lines.append(f"### 🍽️ {name.title()}\n")
 
     # Description
     if description:
-        lines.append(f"## Description: {description}\n")
+        lines.append(f"#### ✒️ Description: \n{description}\n")
 
     # Ingredients
-    lines.append("## Ingredients:")
+    lines.append("#### 📋 Ingredients:")
     for ing in ingredients:
         lines.append(f"- {ing}")
     lines.append("")  # blank line
 
     # Steps
-    lines.append("## Steps:")
+    lines.append("#### 🍳 Steps:")
     for  i in range(len(steps)):
         lines.append(f"{i+1}. {steps[i]}")
     lines.append("")  # blank line
@@ -276,7 +251,7 @@ def polish_markdown(md: str) -> str:
             continue
 
         # Bullets
-        m = re.match(r"^([-*]\s+)(.+)", line)
+        m = re.match(r"^([-]\s+)(.+)", line)
         if m:
             prefix, content = m.groups()
             # Sentence‐case the content
@@ -297,23 +272,6 @@ def polish_markdown(md: str) -> str:
     print("polished")
     return "\n".join(out)
 
-def add_flair(md: str) -> str:
-    prompt = f"""
-You’re a playful cooking assistant.  Take the following Markdown recipe and:
+#example = "I have egg, rice and pork. What can I make under 60 minutes preferably Asian?"
 
-- Add fitting emojis to headings and list items.
-- Sprinkle in a friendly, upbeat tone.
-- Keep the Markdown structure intact (headings, bullets, numbers).
-- Don’t change the actual instructions or ingredients.
-
-### Recipe Markdown:
-{md}
-
-### Fun & Emoji-rich Recipe:
-"""
-    out = gen_model(prompt, truncation=True)[0]["generated_text"]
-    return out.strip()
-
-# example = "I have egg, rice and pork. What can I make under 60 minutes preferably Asian?"
-
-# print(polish_markdown(format_recipe(queryDB(example)[0])))
+#print(polish_markdown(format_recipe(queryDB(example)[0])))
