@@ -8,7 +8,7 @@ Team members: Gia Thy Le, Jeffrey Chan
 ## Prerequisites
 - Neo4j Desktop: https://neo4j.com/download/?utm_program=na-prospecting&utm_adgroup=graph-databases-general
 - Node.js: https://nodejs.org/en/download
-- Python: https://www.python.org/downloads/
+- Python (make sure you use Python 3.12 to avoid conflicts): https://www.python.org/downloads/
 
 ## Environment Setup
 From the root folder run
