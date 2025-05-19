@@ -17,6 +17,9 @@ python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 ```
+This project use machine learning models to extract query so cuda (gpu use) is heavily recommended. Install Pytorch with your corresponding cuda or cpu: https://pytorch.org/
+
+Install cuda toolkit from here if your machine has a gpu, version 11.8 is recommended: https://developer.nvidia.com/cuda-toolkit-archive
 ## Neo4J Database Setup
 Download RAW_recipes.csv from Kaggle into the root folder: https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions/data?select=RAW_recipes.csv
 
