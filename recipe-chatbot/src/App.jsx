@@ -17,6 +17,9 @@ function App() {
   const textareaRef                   = useRef(null);
   const navigate                      = useNavigate();
   const [savedRecipes, setSavedRecipes] = useState([]);
+  const [modalRecipe, setModalRecipe] = useState(null);
+  const dialogRef = useRef(null)
+
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -44,7 +47,6 @@ function App() {
     });
   }, [isOpen]);
 
-  // 1) Send the initial question
   const sendMessage = async () => {
     if (!input.trim()) return;
     setMessages(prev => [...prev, { sender: 'You', text: input }]);
@@ -76,7 +78,6 @@ function App() {
     }
   };
 
-  // 2) Fetch the next recipe in the same session
   const nextRecipe = async () => {
     if (!sessionId) return alert("No session. Ask a question first.");
     setMessages(prev => [...prev, { sender: 'You', text: 'Next recipe' }]);
@@ -106,7 +107,6 @@ function App() {
     }
   };
 
-  // 3) Save the current recipe for the user
   const saveRecipe = async () => {
     if (!recipes.length || index < 0 || index >= recipes.length) {
       return alert("No recipe to save");
@@ -132,7 +132,19 @@ function App() {
     }
   };
 
-  // 4) Handle Enter key in textarea
+  const openRecipe = async (id) => {
+    const token = localStorage.getItem("access_token");
+    const res = await fetch(`/api/user/saved-recipe/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return console.error("failed to load recipe", res.status);
+    const { markdown, name } = await res.json();
+    console.log(markdown);
+    setModalRecipe({ id, name, markdown });
+  };
+
+  const closeModal = () => setModalRecipe(null);
+
   const handleKeyDown = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -140,7 +152,6 @@ function App() {
     }
   };
 
-  // 5) Logout
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     navigate('/login');
@@ -158,28 +169,48 @@ function App() {
       </div>
 
       <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <button onClick={()=>setIsOpen(false)}>×</button>
         <p>— Your Saved Recipes —</p>
         {savedRecipes.length === 0 ? (
-           <p><em>No recipes saved yet.</em></p>
+        <p><em>No recipes saved yet.</em></p>
         ) : (
-            <ul>
-              {savedRecipes.map((r, i) => (
-                <li key={r.id /* or i */}>
-                  {r.name}
-                  {/* optionally wire up clicking to load that recipe in the chat */}
-                </li>
+            <div className="saved-list">
+              {savedRecipes.map(r => (
+                <div key={r.id} className="saved-list-item">
+                  <button
+                    className="link-button"
+                    onClick={() => openRecipe(r.id)}
+                  >
+                    {r.name.charAt(0).toUpperCase() + r.name.slice(1)}
+                  </button>
+                </div>
               ))}
-            </ul>
-          )
-        }
-      </div>
+            </div>
+        )}
+        </div>
+
+          {/* only renders when modalRecipe is non-null */}
+      {modalRecipe && (
+        <div className="modal-backdrop" onClick={closeModal}>
+          <div className="my-modal" onClick={e => e.stopPropagation()}>
+            <header>
+              <button padding = "16px 32px" onClick={closeModal}>×</button>
+            </header>
+            <div className="modal-content markdown-body">
+              <ReactMarkdown>
+                {modalRecipe.markdown}
+              </ReactMarkdown>
+            </div>
+          </div>
+        </div>
+      )}
 
       <button className="logout-button" onClick={handleLogout}>
         Logout
       </button>
 
       <img src="/recipe logo transparent.png" alt="Logo" className="logo" />
-
+        
       <div className="chat-container">
         <h2 className="chat-header">Recipe Chatbot</h2>
         <div className="chat-box">
@@ -200,7 +231,7 @@ function App() {
             </div>
           ))}
         </div>
-
+          
         <div className="chat-input-area">
           <textarea
             ref={textareaRef}
@@ -214,6 +245,8 @@ function App() {
         </div>
       </div>
     </div>
+
+    
   );
 }
 
