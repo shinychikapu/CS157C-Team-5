@@ -75,6 +75,11 @@ class RecipeSessionOut(BaseModel):
 class SaveRecipeIn(BaseModel):
     recipe_id: int
 
+class SavedRecipeDetail(BaseModel):
+    id: int
+    name: str
+    markdown: str
+
 app = FastAPI()
 
 app.add_middleware(
@@ -185,6 +190,37 @@ def get_saved_recipes(current_user: str = Depends(get_current_user)):
         """, {"email": current_user})
         recipes = [rec["recipe"] for rec in result]
     return {"recipes": recipes}
+
+@app.get("/api/user/saved-recipe/{recipe_id}", response_model=SavedRecipeDetail)
+def get_saved_recipe(
+    recipe_id: int,
+    email: str = Depends(get_current_user),
+):
+    with driver.session() as session:
+        rec = session.run(
+            """
+            MATCH (u:User {email:$email})-[:SAVED]->(r:Recipe {id:$rid})
+
+            OPTIONAL MATCH (r)-[:HAS_INGREDIENT]->(i:Ingredient)
+
+            WITH r, collect(DISTINCT i.name) AS ingList
+
+            RETURN r {
+              .id,
+              .name,
+              .description,
+              steps:       r.steps,
+              ingredients: ingList
+            } AS raw
+            """,
+            {"email": email, "rid": recipe_id}
+        ).single()
+        if not rec:
+            raise HTTPException(404, "Not found or not saved by user")
+        raw = rec["raw"]
+    plain_md = format_recipe(raw)
+    polished = polish_markdown(plain_md)
+    return SavedRecipeDetail(id=raw["id"], name=raw["name"], markdown=polished)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
