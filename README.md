@@ -6,11 +6,9 @@ Semester: Spring 2025
 Team members: Gia Thy Le, Jeffrey Chan
 
 ## Prerequisites
-Neo4j Desktop: https://neo4j.com/download/?utm_program=na-prospecting&utm_adgroup=graph-databases-general
-
-Node.js: https://nodejs.org/en/download
-
-Python: https://www.python.org/downloads/
+- Neo4j Desktop: https://neo4j.com/download/?utm_program=na-prospecting&utm_adgroup=graph-databases-general
+- Node.js: https://nodejs.org/en/download
+- Python: https://www.python.org/downloads/
 
 ## Environment Setup
 From the root folder run
@@ -45,7 +43,33 @@ It will output recipe_ingredients.csv, recipes.csv, ingredients.csv, recipe_tags
 
 ![image](https://github.com/user-attachments/assets/b558a03f-58d4-412a-b9d8-9b11075a1a69)
 
+
 **HAS_TAG Relationship**
 
 ![image](https://github.com/user-attachments/assets/599fc055-e07c-4f04-be93-aaec9cf0bcdf)
+
+## Frontend Repository
+From the root folder
+```
+cd recipe-chatbot
+```
+Install dependencies
+```
+npm install
+```
+Run development server
+```
+npm run dev
+```
+Now go run the backend server
+## Backend Repository
+From the root folder, open another terminal separated from your front end terminal
+```
+cd backend
+```
+Run the fastapi server
+```
+uvicorn backend_fastapi:app --host 0.0.0.0 --port 4000 --reload
+```
+Now open ```http://localhost:5173/login``` in your browser and make a new account and ask the bot questions XD
 
