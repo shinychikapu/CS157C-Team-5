@@ -13,7 +13,7 @@ Team members: Gia Thy Le, Jeffrey Chan
 ## Environment Setup
 From the root folder run
 ```
-pythom -m venv venv
+python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 ```
