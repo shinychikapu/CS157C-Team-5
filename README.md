@@ -69,7 +69,7 @@ cd backend
 ```
 Run the fastapi server
 ```
-uvicorn backend_fastapi:app --host 0.0.0.0 --port 4000
+uvicorn backend_fastapi:app  --port 4000
 ```
 Now open ```http://localhost:5173/login``` in your browser and make a new account and ask the bot questions XD
 
